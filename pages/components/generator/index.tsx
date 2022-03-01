@@ -27,9 +27,10 @@ const generator = (nb:number) =>{
     const generateAttr = ()=>{
         const sportsArray = ['Football', 'Volleyball', 'Tennis', 'Squash', 'Basketball', 'Table tennis'];
         return {
-            people: Math.floor(Math.random() * 15 + 2),
-            price: 0,
-            sport: sportsArray[Math.floor(Math.random() * 6)]
+            'people': Math.floor(Math.random() * 15 + 2),
+            'price': 0,
+            'sport': sportsArray[Math.floor(Math.random() * 6)],
+            'host': 'John Doe'
         }
     }
     const randomPoint:any = (polygonGeoJson:any, bounds:any) => {
@@ -47,8 +48,14 @@ const generator = (nb:number) =>{
         if (inside) {
             const randomAttr = generateAttr();
             return {
-            point: [lng,lat],
-            ...randomAttr
+                'type': 'Feature',
+                'properties': {
+                    ...randomAttr
+                },
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [lng,lat]
+                }
             }
         } else {
             return randomPoint(polygon,bounds)
@@ -59,7 +66,12 @@ const generator = (nb:number) =>{
     for(let i=0; i<nb; i++){
         points.push(randomPoint(polygon,bounds))
     }
-    return points;
+    const geoJSON = {
+        'type': 'FeatureCollection',
+        'features': points
+    }
+
+    return geoJSON;
 }
 
 export default generator;
