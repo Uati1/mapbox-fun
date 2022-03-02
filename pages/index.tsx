@@ -1,11 +1,9 @@
 import React, {useEffect, useRef, useState,useMemo,memo} from 'react';
 import  mapboxgl from 'mapbox-gl';
-import generator from './components/generator';
+//import generator from './components/generator';
 import { usePosition } from 'use-position';
-import polygon from './components/polygon'
 import 'mapbox-gl/dist/mapbox-gl.css'; 
-import useWindowDimensions from './components/windowDimension'
-
+import axios from 'axios';
 
 const Home = ()=>{
   //split to tiles
@@ -176,8 +174,18 @@ const Home = ()=>{
       minZoom: 6
     });
   }
+  const getPoints = () =>{
+    axios.get('/api', {
+      params: {
+        quantity: 100000
+      }
+    }).then(res=>{
+      console.log(res.data)
+      setPoints(res.data)
+    }).catch(err=> {throw err});
+  }
   useEffect(()=>{
-    setPoints(generator(100000));
+    getPoints()
   },[])
 
   useEffect( ()=>{
@@ -212,7 +220,7 @@ const Home = ()=>{
   return <>
     <div id='static' className={loading?'':'hide'}><img src={`https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${initialState.ln},${initialState.lt-6},${initialState.zoom}/720x1280?access_token=${mapboxgl.accessToken}`} /></div>
     <div className={loading?'hide container':'container'} ref = {mapRef}></div>
-    <button onClick={()=>setPoints(generator(100000))}>generate</button>
+    <button onClick={()=>getPoints()}>generate</button>
     <button onClick={()=>setRender(prev=>prev+1)}>render</button>
   </>;
 }
