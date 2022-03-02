@@ -12,19 +12,32 @@ const Home = ()=>{
   //memo tiles with layers
   // fire full load on drag, unzooom only map + button load events, on specific zoom
   //add types
+  interface pointObject {
+    type: string
+    coordinates: [x:number, y:number]
+  }
+  interface featureObject {
+    type: string,
+    properties: object
+    geometry: pointObject
+  }
+  interface geoJSONObject {
+    type: string,
+    features: Array<featureObject>
+  }
   mapboxgl.accessToken = 'pk.eyJ1IjoibmVvc2NhIiwiYSI6ImNrZm80ZnI4MzJlcHoyeW52eGZqeDVpNXcifQ.0b4R6NcNKL9SNDq1q7ECrA';
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [points,setPoints] = useState<any>({});
-  const [loading, setLoading] = useState(false);
-  const { latitude, longitude, error } = usePosition();
+  const [points,setPoints] = useState<geoJSONObject | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { latitude, longitude, error }:{latitude: number, longitude: number, error: string} = usePosition();
   const [start, setStart] = useState({
     ln: 19.145136,
     lt: 51.919438,
     zoom: 5
   })
   useEffect(()=>{
-    setPoints(generator(10000));
+    setPoints(generator(100000));
   },[])
   useEffect(()=>{
     if(map.current=== null) return;
@@ -43,7 +56,7 @@ const Home = ()=>{
         ...prev,
         ln: longitude,
         lt: latitude,
-        zoom: 12
+        zoom: 10
       }))
     }
   },[longitude,latitude,error])
@@ -52,9 +65,12 @@ const Home = ()=>{
     if(map.current!== null) return;
     map.current = new mapboxgl.Map({
       container: mapRef.current,
-      style: 'mapbox://styles/mapbox/light-v10',
+      "type": "vector",
+      style: 'mapbox://styles/mapbox/light-v10?optimize=true',
       center: [start.ln, start.lt],
-      zoom: start.zoom
+      zoom: start.zoom,
+      minzoom: 4,
+      maxzoom: 10
     });
     map.current.on('click', 'unclustered-point', (e:any) => {
       const coordinates = e.features[0].geometry.coordinates.slice();
@@ -93,14 +109,18 @@ const Home = ()=>{
       map.current.on('mouseleave', 'unclustered-point', () => {
         map.current.getCanvas().style.cursor = '';
       });
+      map.current.on('sourcedata', () => {
+        console.log('A sourcedata event occurred.');
+        });
   },[])
   useEffect(()=>{
-    if(Object.keys(points).length === 0&& points.constructor === Object) return;
+    if(points===null) return;
     console.log(points)
     if (points&& map.current!==null&&loading===false){
       setLoading(true)
       
       map.current.on('load', ()=>{
+        console.log('A load event occurred.');
         map.current.loadImage(
           'https://i.ibb.co/3p77qkp/pin.png',
           (error:any, image:any) => {
@@ -173,16 +193,6 @@ const Home = ()=>{
             filter: ['!', ['has', 'point_count']],
            
           });
-          // map.current.addLayer({
-          //   'id': 'events',
-          //   'type': 'symbol',
-          //   'source': 'places',
-          //   'layout': {
-          //     'icon-image': 'pin',
-          //     'icon-allow-overlap': true,
-          //     'icon-size': 0.05
-          //     }
-          // });
         })
       })
     }

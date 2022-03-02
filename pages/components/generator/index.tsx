@@ -1,6 +1,19 @@
 import polygon from "../polygon";
 import * as turf from '@turf/turf';
-const generator = (nb:number) =>{
+interface pointObject {
+    type: string
+    coordinates: [x:number, y:number]
+  }
+  interface featureObject {
+    type: string,
+    properties: object
+    geometry: pointObject
+  }
+  interface geoJSONObject {
+    type: string,
+    features: featureObject
+  }
+const generator:geoJSONObject = (nb:number) =>{
     const getPolygonBoundingBox = (feature:any)=> {
         let bounds:any[] = [[], []];
         let polygon,latitude,longitude;
