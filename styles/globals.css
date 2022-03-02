@@ -7,6 +7,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+    text-align: center;
 }
 
 a {
@@ -29,3 +30,27 @@ a {
   border:1px solid gray;
   background-color:lightblue;
 } */
+button{
+  position: absolute;
+  z-index: 999;
+  top: 0;
+  left: 0;
+}
+.hide{
+  display: none;
+}
+button:last-of-type{
+  right: 0;
+  left: initial
+}
+#static {
+  width: 100%;
+  height: 100%;
+  grid-column: 1;
+  grid-row: 1;
+}
+#static >img{
+ display: block;
+ width: 100%;
+ height: 100%;
+}
