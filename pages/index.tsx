@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState,useMemo,memo} from 'react';
+import React, {useEffect, useRef, useState,useMemo,memo, useCallback} from 'react';
 import  mapboxgl from 'mapbox-gl';
 //import generator from './components/generator';
 import { usePosition } from 'use-position';
@@ -162,9 +162,20 @@ const Home = ()=>{
       
     })
   }
-  const generateMap = ()=>{
+  const getPoints = useCallback(() =>{
+    return (axios.get('/api', {
+      params: {
+        quantity: 100000
+      }
+    }).then(res=>{
+      setPoints(res.data)
+    }).catch(err=> {throw err}))
+  },[])
+
+
+  const generateMap = useCallback(()=>{
     setLoading(true);
-      map.current = new mapboxgl.Map({
+    return map.current = new mapboxgl.Map({
       container: mapRef.current,
       type: "vector",
       style: 'mapbox://styles/slatacz/cl09oziqt000x15s1igs277dx',
@@ -172,22 +183,17 @@ const Home = ()=>{
       zoom: start.zoom,
       maxZoom: 15,
       minZoom: 6
-    });
-  }
-  const getPoints = () =>{
-    axios.get('/api', {
-      params: {
-        quantity: 100000
-      }
-    }).then(res=>{
-      console.log(res.data)
-      setPoints(res.data)
-    }).catch(err=> {throw err});
-  }
+    })
+  },[getPoints])
+
   useEffect(()=>{
     getPoints()
   },[])
 
+  useEffect(()=>{
+    console.log(points)
+  },[points])
+  
   useEffect( ()=>{
     if(loading === true) return;
     if(map.current=== null) return;
@@ -199,6 +205,7 @@ const Home = ()=>{
       zoom: start.zoom
     });
   },[loading])
+
   useEffect(()=>{
     if (error || !latitude) return; 
     if (latitude && longitude && !error) {
@@ -210,13 +217,15 @@ const Home = ()=>{
       }))
     }
   },[longitude,latitude,error])
+  
   useEffect(()=>{
-    if(points === null) return
-    generateMap();
-    addMapEventListeners();
-    addLayersOnLoad();
-  },[render,points])
-
+    if(points !== null) {
+      generateMap();
+      addMapEventListeners();
+      addLayersOnLoad();
+    }
+    
+  },[points,render])
   return <>
     <div id='static' className={loading?'':'hide'}><img src={`https://api.mapbox.com/styles/v1/mapbox/light-v10/static/${initialState.ln},${initialState.lt-6},${initialState.zoom}/720x1280?access_token=${mapboxgl.accessToken}`} /></div>
     <div className={loading?'hide container':'container'} ref = {mapRef}></div>
