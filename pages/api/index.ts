@@ -82,11 +82,8 @@ const generator:geoJSONObject = (nb:number) =>{
   for(let i=0; i<nb; i++){
       points.push(randomPoint(polygon,bounds))
   }
-  const geoJSON = {
-      'type': 'FeatureCollection',
-      'features': points
-  }
-  return geoJSON;
+  
+  return points;
 }
 
 type Data = {
